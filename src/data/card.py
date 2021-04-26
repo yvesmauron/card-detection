@@ -2,7 +2,7 @@ from abc import ABC
 import numpy as np
 
 
-class Card(ABC):
+class CardIdentfierBox():
 
     def __init__(
         self,
@@ -20,6 +20,43 @@ class Card(ABC):
         self.box_x_width = int(box_x_width * zoom)
         self.box_y_border = int(box_y_border * zoom)
         self.box_y_height = int(box_y_height * zoom)
+
+    def ref_box_tl(self):
+        return np.array(
+            [
+                [self.box_x_border, self.box_y_border],
+                [self.box_x_width, self.box_y_border],
+                [self.box_x_width, self.box_y_height],
+                [self.box_x_border, self.box_y_height]
+            ], dtype=np.float32)
+
+    def ref_box_br(self):
+        return np.array(
+            [
+                [self.width - self.box_x_border,
+                 self.height - self.box_y_border],
+                [self.width - self.box_x_width,
+                 self.height - self.box_y_border],
+                [self.width - self.box_x_width,
+                 self.height - self.box_y_height],
+                [self.width - self.box_x_border,
+                 self.height - self.box_y_height]
+            ],
+            dtype=np.float32)
+
+    def ref_boxes(self):
+        return np.array([self.ref_box_hl(), self.ref_box_lr()])
+
+
+class CardSet(ABC):
+    def __init__(
+        self,
+        width: float = 57,
+        height: float = 87,
+        zoom: int = 4
+    ):
+        self.width = int(width * zoom)
+        self.height = int(height * zoom)
 
     def ref_card(self):
 
@@ -39,34 +76,8 @@ class Card(ABC):
              [0, 0]],
             dtype=np.float32)
 
-    def ref_box_hl(self):
-        return np.array(
-            [
-                [self.box_x_border, self.box_y_border],
-                [self.box_x_width, self.box_y_border],
-                [self.box_x_width, self.box_y_height],
-                [self.box_x_border, self.box_y_height]
-            ], dtype=np.float32)
 
-    def ref_box_lr(self):
-        return np.array(
-            [
-                [self.width - self.box_x_border,
-                 self.height - self.box_y_border],
-                [self.width - self.box_x_width,
-                 self.height - self.box_y_border],
-                [self.width - self.box_x_width,
-                 self.height - self.box_y_height],
-                [self.width - self.box_x_border,
-                 self.height - self.box_y_height]
-            ],
-            dtype=np.float32)
-
-    def ref_boxes(self):
-        return np.array([self.ref_box_hl(), self.ref_box_lr()])
-
-
-class FrenchCard(Card):
+class FrenchCards(CardSet):
 
     def __init__(
         self,
@@ -81,9 +92,31 @@ class FrenchCard(Card):
         super().__init__(
             width=width,
             height=height,
-            box_x_border=box_x_border,
-            box_x_width=box_x_width,
-            box_y_border=box_y_border,
-            box_y_height=box_y_height,
             zoom=zoom
         )
+
+        card_suit_values = [
+            value+suit for value in ['A', 'K', 'Q', 'J',
+                                     '10', '9', '8', '7', '6'] 
+            for suit in ['s', 'h', 'd', 'c']
+        ]
+
+        self.cards = {
+            card: CardIdentfierBox(
+                width=width,
+                height=height,
+                box_x_border=box_x_border,
+                box_x_width=box_x_width,
+                box_y_border=box_y_border,
+                box_y_height=box_y_height,
+                zoom=zoom
+            )
+            for card in card_suit_values
+        }
+
+
+if __name__ == '__main__':
+
+    fc = FrenchCards()
+
+    print(fc.cards["7s"])

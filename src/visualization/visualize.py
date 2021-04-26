@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from src.data.card import Card, FrenchCard
+from src.data.card import CardSet, FrenchCards
 from pathlib import Path
 from uuid import uuid4
 
@@ -51,7 +51,7 @@ def display_image(
 
 
 def display_random_card(
-    card: Card = FrenchCard(),
+    card_set: CardSet = FrenchCards(),
     card_filter: str = "*",
     input_dir: str = "data/processed/cards",
     fig_path: Path = f"data/test/random_card_{uuid4()}.png"
@@ -61,7 +61,10 @@ def display_random_card(
     selected_file = random.choice(image_files)
     fig, ax = display_image(
         cv2.imread(selected_file, cv2.IMREAD_UNCHANGED),
-        polygons=[card.ref_box_hl(), card.ref_box_lr()]
+        polygons=[
+            card_set.cards["7s"].ref_box_tl(),
+            card_set.cards["7s"].ref_box_br()
+        ]
     )
 
     fig.savefig(fig_path)
@@ -69,4 +72,4 @@ def display_random_card(
 
 if __name__ == '__main__':
 
-    display_random_card(card_filter="7s")
+    display_random_card(card_filter="Ks")

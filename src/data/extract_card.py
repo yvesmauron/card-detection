@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import os
 from uuid import uuid4
-from src.data.card import Card, FrenchCard
+from src.data.card import CardSet, FrenchCards
 import shutil
 import logging
 from src.visualization.visualize import display_image
@@ -12,17 +12,17 @@ logging.basicConfig(level=logging.INFO, format=log_fmt)
 
 
 def alphamask(
-    card: Card = FrenchCard(),
+    card_set: CardSet = FrenchCards(),
     bord_size: int = 2
 ):
     alphamask = np.ones(
-        (card.height, card.width),
+        (card_set.height, card_set.width),
         dtype=np.uint8
     ) * 255
     cv2.rectangle(
         alphamask,
         (0, 0),
-        (card.width-1, card.height-1),
+        (card_set.width-1, card_set.height-1),
         0,
         bord_size
     )
@@ -35,22 +35,22 @@ def alphamask(
     )
     cv2.line(
         alphamask,
-        (card.width-bord_size*3, 0),
-        (card.width, bord_size*3),
+        (card_set.width-bord_size*3, 0),
+        (card_set.width, bord_size*3),
         0,
         bord_size
     )
     cv2.line(
         alphamask,
-        (0, card.height-bord_size*3),
-        (bord_size*3, card.height),
+        (0, card_set.height-bord_size*3),
+        (bord_size*3, card_set.height),
         0,
         bord_size
     )
     cv2.line(
         alphamask,
-        (card.width-bord_size*3, card.height),
-        (card.width, card.height-bord_size*3),
+        (card_set.width-bord_size*3, card_set.height),
+        (card_set.width, card_set.height-bord_size*3),
         0,
         bord_size
     )
@@ -71,7 +71,7 @@ def varianceOfLaplacian(img):
 def extract_card(
         img,
         output_path=None,
-        card: Card = FrenchCard(),
+        card_set: CardSet = FrenchCards(),
         min_focus=120,
         debug=False
 ):
@@ -125,16 +125,20 @@ def extract_card(
         if wr > hr:
             Mp = cv2.getPerspectiveTransform(
                 np.float32(box),
-                card.ref_card()
+                card_set.ref_card()
             )
         else:
             Mp = cv2.getPerspectiveTransform(
                 np.float32(box),
-                card.ref_card_rotated()
+                card_set.ref_card_rotated()
             )
         # Determine the warped image by applying the transformation
         # to the image
-        imgwarp = cv2.warpPerspective(img, Mp, (card.width, card.height))
+        imgwarp = cv2.warpPerspective(
+            img,
+            Mp,
+            (card_set.width, card_set.height)
+        )
         # Add alpha layer
         imgwarp = cv2.cvtColor(imgwarp, cv2.COLOR_BGR2BGRA)
 
@@ -179,7 +183,7 @@ def extract_card(
 def extract_cards_from_video(
     video_file: str,
     output_dir: str,
-    card: Card = FrenchCard(),
+    card_set: CardSet = FrenchCards(),
     keep_ratio: int = 5,
     min_focus: int = 120,
     debug: bool = False
@@ -226,7 +230,7 @@ def extract_cards_from_video(
             valid, card_img = extract_card(
                 img,
                 output_path,
-                card=card,
+                card_set=card_set,
                 min_focus=min_focus,
                 debug=debug
             )
