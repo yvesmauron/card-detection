@@ -59,17 +59,43 @@ def display_random_card(
 
     image_files = glob(input_dir + f"/{card_filter}/*.png")
     selected_file = random.choice(image_files)
-    fig, ax = display_image(
-        cv2.imread(selected_file, cv2.IMREAD_UNCHANGED),
-        polygons=[
-            card_set.cards["7s"].ref_box_tl(),
-            card_set.cards["7s"].ref_box_br()
-        ]
+    card_suit_value = selected_file.split("/")[-2]
+    img = cv2.imread(selected_file, cv2.IMREAD_UNCHANGED)
+
+    convex_hull = (
+        card_set.cards[card_suit_value].ref_hull(img)
+        if card_suit_value[0] in ["1", "6", "7", "8", "9", "A"] else None
     )
+
+    if convex_hull is not None:
+        fig, ax = display_image(
+            img,
+            polygons=[
+                card_set.cards[card_suit_value].ref_box_tl(),
+                card_set.cards[card_suit_value].ref_box_br(),
+                convex_hull
+            ]
+        )
+    else:
+        fig, ax = display_image(
+            img,
+            polygons=[
+                card_set.cards[card_suit_value].ref_box_tl(),
+                card_set.cards[card_suit_value].ref_box_br()
+            ]
+        )
 
     fig.savefig(fig_path)
 
 
 if __name__ == '__main__':
-
-    display_random_card(card_filter="Ks")
+    cards = [
+        f"{value}{suit}"
+        for value in ["6", "7", "8", "9", "10", "J", "Q", "K", "A"]
+        for suit in ["h", "s", "d", "c"]
+    ]
+    for card in cards:
+        display_random_card(
+            card_filter=card,
+            fig_path=f"data/test/random_card_{card}.png"
+        )
