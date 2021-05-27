@@ -3,16 +3,16 @@ import numpy as np
 import cv2
 
 
-class CardIdentfierBox():
+class ReferenceCard():
 
     def __init__(
         self,
-        width: float,
-        height: float,
-        box_x_border: float,
-        box_x_width: float,
-        box_y_border: float,
-        box_y_height: float,
+        width: float = 57,
+        height: float = 87,
+        box_x_border: float = 2,
+        box_x_width: float = 9.5,
+        box_y_border: float = 3,
+        box_y_height: float = 23,
         zoom: int = 4
     ):
         self.width = int(width * zoom)
@@ -22,7 +22,7 @@ class CardIdentfierBox():
         self.box_y_border = int(box_y_border * zoom)
         self.box_y_height = int(box_y_height * zoom)
 
-    def ref_box_tl(self):
+    def box_tl(self):
         return np.array(
             [
                 [self.box_x_border, self.box_y_border],
@@ -31,7 +31,7 @@ class CardIdentfierBox():
                 [self.box_x_border, self.box_y_height]
             ], dtype=np.float32)
 
-    def ref_box_br(self):
+    def box_br(self):
         return np.array(
             [
                 [self.width - self.box_x_border,
@@ -45,10 +45,10 @@ class CardIdentfierBox():
             ],
             dtype=np.float32)
 
-    def ref_boxes(self):
+    def boxes(self):
         return np.array([self.ref_box_hl(), self.ref_box_lr()])
 
-    def ref_hull(self, img: np.array, box: list = None):
+    def hull(self, img: np.array, box: list = None):
         """
             Find in the zone 'box' of image 'img' and return, the convex hull
             delimiting the value and suit symbols
@@ -129,18 +129,7 @@ class CardIdentfierBox():
 
         return hull_in_img
 
-
-class CardSet(ABC):
-    def __init__(
-        self,
-        width: float = 57,
-        height: float = 87,
-        zoom: int = 4
-    ):
-        self.width = int(width * zoom)
-        self.height = int(height * zoom)
-
-    def ref_card(self):
+    def card(self):
 
         return np.array(
             [[0, 0],
@@ -150,7 +139,7 @@ class CardSet(ABC):
             dtype=np.float32
         )
 
-    def ref_card_rotated(self):
+    def card_rotated(self):
         return np.array(
             [[self.width, 0],
              [self.width, self.height],
@@ -159,66 +148,8 @@ class CardSet(ABC):
             dtype=np.float32)
 
 
-class FrenchCards(CardSet):
-
-    def __init__(
-        self,
-        width: float = 57,
-        height: float = 87,
-        zoom: int = 4,
-        custom_bbox=None
-    ):
-        super().__init__(
-            width=width,
-            height=height,
-            zoom=zoom
-        )
-
-        if custom_bbox is not None:
-            assert type(custom_bbox) == dict, "custom_bbox should be a dict"
-
-            self.cards = custom_bbox
-
-        else:
-
-            card_suit_values = [
-                value+suit for value in ['A', 'K', 'Q', 'J',
-                                         '10', '9', '8', '7', '6']
-                for suit in ['s', 'h', 'd', 'c']
-            ]
-
-            self.cards = dict()
-            for card in card_suit_values:
-
-                if card[0] in ['K', 'Q', 'J']:
-                    box_x_border = 3
-                    box_x_width = 27
-                    box_y_border = 5
-                    box_y_height = 25
-                elif card[0] == "A":
-                    box_x_border = 2
-                    box_x_width = 12
-                    box_y_border = 4
-                    box_y_height = 13
-                else:
-                    box_x_border = 3
-                    box_x_width = 22
-                    box_y_border = 5
-                    box_y_height = 22
-
-                self.cards[card] = CardIdentfierBox(
-                    width=width,
-                    height=height,
-                    box_x_border=box_x_border,
-                    box_x_width=box_x_width,
-                    box_y_border=box_y_border,
-                    box_y_height=box_y_height,
-                    zoom=zoom
-                )
-
-
 if __name__ == '__main__':
 
-    fc = FrenchCards()
+    ref_card = ReferenceCard()
 
-    print(fc.cards["7s"])
+    print(ref_card)

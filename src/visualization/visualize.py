@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from src.data.card import CardSet, FrenchCards
+from src.data.card import ReferenceCard
 from pathlib import Path
 from uuid import uuid4
 
@@ -51,7 +51,7 @@ def display_image(
 
 
 def display_random_card(
-    card_set: CardSet = FrenchCards(),
+    ref_card: ReferenceCard = ReferenceCard(),
     card_filter: str = "*",
     input_dir: str = "data/processed/cards",
     fig_path: Path = f"data/test/random_card_{uuid4()}.png"
@@ -63,7 +63,7 @@ def display_random_card(
     img = cv2.imread(selected_file, cv2.IMREAD_UNCHANGED)
 
     convex_hull = (
-        card_set.cards[card_suit_value].ref_hull(img)
+        ref_card.cards[card_suit_value].ref_hull(img)
         if card_suit_value[0] in ["1", "6", "7", "8", "9", "A"] else None
     )
 
@@ -71,8 +71,8 @@ def display_random_card(
         fig, ax = display_image(
             img,
             polygons=[
-                card_set.cards[card_suit_value].ref_box_tl(),
-                card_set.cards[card_suit_value].ref_box_br(),
+                ref_card.box_tl(),
+                ref_card.box_br(),
                 convex_hull
             ]
         )
@@ -80,8 +80,8 @@ def display_random_card(
         fig, ax = display_image(
             img,
             polygons=[
-                card_set.cards[card_suit_value].ref_box_tl(),
-                card_set.cards[card_suit_value].ref_box_br()
+                ref_card.box_tl(),
+                ref_card.box_br()
             ]
         )
 
